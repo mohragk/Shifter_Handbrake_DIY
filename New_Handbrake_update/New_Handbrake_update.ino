@@ -7,6 +7,7 @@
 #define PIN_BUTTON_OFFSET 9
 
 #include "Joystick.h"
+#include "DynamicHID.h"
 
 // Last state of the buttons
 int lastButtonState[MAX_SHIFTER_BTNS] = {0,0};
