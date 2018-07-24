@@ -6,7 +6,7 @@
 #define MAX_SHIFTER_BTNS 2
 #define PIN_BUTTON_OFFSET 9
 
-#include "Joystick/Joystick.h"
+#include "Joystick.h"
 
 // Last state of the buttons
 int lastButtonState[MAX_SHIFTER_BTNS] = {0,0};
