@@ -3,11 +3,13 @@
 // - Connect  10k potentiometer from handbrake to A0
 //-----------------------------
 
+#define MAX_SHIFTER_BTNS 2
+#define PIN_BUTTON_OFFSET 9
+
 #include <Joystick.h>
 
 // Last state of the buttons
-const int pinToButtonOffset = 9; //offset from pin to button
-int lastButtonState[2] = {0,0};
+int lastButtonState[MAX_SHIFTER_BTNS] = {0,0};
 
 int lastOverrideButtonState = 0;
 int overrideButtonNum = 6;
@@ -34,30 +36,31 @@ void setup() {
 void loop() {
 
   //update handbrake axis
-  int pot = analogRead(A0);
-  pot = constrain(pot, 50, 750);
-  int mapped = map(pot,50,750,0,255);
-  Joystick.setXAxis(mapped);
+  int pot    = analogRead( A0 );
+  pot        = constrain( pot, 50, 750 );
+  int mapped = map( pot, 50, 750, 0, 255 );
+  Joystick.setXAxis( mapped );
 
   int currentOverrideButtonState = 0;
 
   //if more than half way along travel, set buttonState to 1.
-  if (mapped >= 127) {
+  if ( mapped >= 127 ) 
+  {
     currentOverrideButtonState = 1;
   } 
 
-  // make sure we only change once
-  if (lastOverrideButtonState != currentOverrideButtonState) {
+  if (lastOverrideButtonState != currentOverrideButtonState) 
+  {
   	Joystick.setButton(overrideButtonNum, currentOverrideButtonState);
   	lastOverrideButtonState = currentOverrideButtonState;
   }
   
 
-
-  // Read pin values and update buttons
-  for (int index = 0; index < 4; index++)
+  // Read pin values and update shifter buttons
+  for (int index = 0; index < MAX_SHIFTER_BTNS; index++)
   {
-    int currentButtonState = !digitalRead(index + pinToButtonOffset);
+    int currentButtonState = !digitalRead(index + PIN_BUTTON_OFFSET);
+
     if (currentButtonState != lastButtonState[index])
     {
       Joystick.setButton(index, currentButtonState);
