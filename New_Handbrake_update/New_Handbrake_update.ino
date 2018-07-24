@@ -6,7 +6,7 @@
 #define MAX_SHIFTER_BTNS 2
 #define PIN_BUTTON_OFFSET 9
 
-#include <Joystick.h>
+#include "Joystick/Joystick.h"
 
 // Last state of the buttons
 int lastButtonState[MAX_SHIFTER_BTNS] = {0,0};
@@ -41,13 +41,14 @@ void loop() {
   int mapped = map( pot, 50, 750, 0, 255 );
   Joystick.setXAxis( mapped );
 
-  int currentOverrideButtonState = 0;
+
 
   //if more than half way along travel, set buttonState to 1.
+  int currentOverrideButtonState = 0;
+  
   if ( mapped >= 127 ) 
-  {
     currentOverrideButtonState = 1;
-  } 
+  
 
   if (lastOverrideButtonState != currentOverrideButtonState) 
   {
@@ -57,14 +58,14 @@ void loop() {
   
 
   // Read pin values and update shifter buttons
-  for (int index = 0; index < MAX_SHIFTER_BTNS; index++)
+  for (int i = 0; i < MAX_SHIFTER_BTNS; i++)
   {
-    int currentButtonState = !digitalRead(index + PIN_BUTTON_OFFSET);
+    int currentButtonState = !digitalRead(i + PIN_BUTTON_OFFSET);
 
-    if (currentButtonState != lastButtonState[index])
+    if (currentButtonState != lastButtonState[i])
     {
-      Joystick.setButton(index, currentButtonState);
-      lastButtonState[index] = currentButtonState;
+      Joystick.setButton(i, currentButtonState);
+      lastButtonState[i] = currentButtonState;
     }
   }
 
