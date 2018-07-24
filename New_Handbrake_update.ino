@@ -57,7 +57,7 @@ void loop() {
   // Read pin values and update buttons
   for (int index = 0; index < 4; index++)
   {
-    int currentButtonState = !digitalRead(index + pinToButtonMap);
+    int currentButtonState = !digitalRead(index + pinToButtonOffset);
     if (currentButtonState != lastButtonState[index])
     {
       Joystick.setButton(index, currentButtonState);
