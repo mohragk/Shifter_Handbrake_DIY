@@ -9,10 +9,10 @@
 #include "Joystick.h"
 
 // Last state of the buttons
-int lastButtonState[MAX_SHIFTER_BTNS] = {0,0};
+int lastButtonState[MAX_SHIFTER_BTNS];
 
-int lastOverrideButtonState = 0;
-int overrideButtonNum = 6;
+int lastHandbrakeButtonState = 0;
+int handbrakeButtonNum = 6;
 
 Joystick_ Joystick(JOYSTICK_DEFAULT_REPORT_ID,JOYSTICK_TYPE_JOYSTICK,
   8, 0,                  // Button Count, Hat Switch Count
@@ -27,6 +27,8 @@ void setup() {
   pinMode(A0, INPUT);
   pinMode(9, INPUT_PULLUP);
   pinMode(10, INPUT_PULLUP);
+
+  memset(lastButtonState,0,sizeof(lastButtonState));
   
   // Initialize Joystick Library
   Joystick.begin();
@@ -44,16 +46,16 @@ void loop() {
 
 
   //if more than half way along travel, set buttonState to 1.
-  int currentOverrideButtonState = 0;
+  int currentHandbrakeButtonState = 0;
   
   if ( mapped >= 127 ) 
-    currentOverrideButtonState = 1;
+    currentHandbrakeButtonState = 1;
   
 
-  if (lastOverrideButtonState != currentOverrideButtonState) 
+  if (lastHandbrakeButtonState != currentHandbrakeButtonState) 
   {
-  	Joystick.setButton(overrideButtonNum, currentOverrideButtonState);
-  	lastOverrideButtonState = currentOverrideButtonState;
+  	Joystick.setButton(handbrakeButtonNum, currentHandbrakeButtonState);
+  	lastHandbrakeButtonState = currentHandbrakeButtonState;
   }
   
 
