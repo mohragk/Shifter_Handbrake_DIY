@@ -15,7 +15,7 @@ int lastButtonState[MAX_SHIFTER_BTNS];
 int lastHandbrakeButtonState = 0;
 int handbrakeButtonNum = 6;
 
-PowLUT mediumCurveLUT(0.5, 16);
+PowLUT mediumCurveLUT(0.5, 16, 1024);
 
 Joystick_ Joystick(JOYSTICK_DEFAULT_REPORT_ID,JOYSTICK_TYPE_JOYSTICK,
   8, 0,                  // Button Count, Hat Switch Count
