@@ -28,16 +28,16 @@ public:
 
 	void setLUT(float skew, int steps, int range)
 	{
-    assert(steps <= 32);
+    steps = constrain(steps, 0, 32);
     
 		_tableSize = steps;
+    int rows = steps;
 		int cols = 2;
-		int rows = steps;
 		int value = 0;
 		int offset = range / rows;
 
     //initialize table to 0's
-		memset(table,0,sizeof(table[0][0] * rows * cols));
+		memset(table,0,sizeof(table[0][0] * 32 * 2));
 
 		for (int i = 0; i < rows; i++)
 		{	
@@ -59,7 +59,7 @@ public:
 				float interpolated = (table[i][1] - table[i+1][1]) / (table[i][0] - table[i+1][0]);
 				interpolated *= input - table[i][0];
 				interpolated += table[i][1];
-				value =  interpolated; 
+				value = static_cast<int>( floor(interpolated) ); 
 			}
 		}
 		return value;
@@ -73,23 +73,14 @@ private:
 
 	int getSkewedValue(int value, float skew)
 	{
+    if (skew = 1.0)
+      return value;
+  
 	  float normalised = (float)value / 1024;
 	  float skewed = pow(normalised, skew);
 	  
 	  return static_cast<int> (skewed * 1024);
 	}
-
- void __assert(const char *__func, const char *__file, int __lineno, const char *__sexp) 
- {
-    // transmit diagnostic informations through serial link. 
-    Serial.println(__func);
-    Serial.println(__file);
-    Serial.println(__lineno, DEC);
-    Serial.println(__sexp);
-    Serial.flush();
-    // abort program execution.
-    abort();
- }
  
 };
 

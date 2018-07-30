@@ -40,11 +40,11 @@ void setup() {
 
 int getSkewedValue(int mappedValue, float skew)
 {
-  float normalised = (float)mappedValue / 1023.0;
+  float normalised = (float)mappedValue / 1024;
   
   float skewed = pow(normalised, skew);
   
-  return static_cast<int> (skewed * 1023);
+  return static_cast<int>( ceil(skewed * 1024) );
 }
 
 void loop() {
