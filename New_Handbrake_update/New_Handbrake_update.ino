@@ -7,12 +7,15 @@
 #define PIN_BUTTON_OFFSET 9
 
 #include "Joystick.h"
+#include "PowLUT.h"
 
 // Last state of the buttons
 int lastButtonState[MAX_SHIFTER_BTNS];
 
 int lastHandbrakeButtonState = 0;
 int handbrakeButtonNum = 6;
+
+PowLUT mediumCurveLUT(0.5, 16);
 
 Joystick_ Joystick(JOYSTICK_DEFAULT_REPORT_ID,JOYSTICK_TYPE_JOYSTICK,
   8, 0,                  // Button Count, Hat Switch Count
@@ -39,7 +42,7 @@ int getSkewedValue(int mappedValue, float skew)
 {
   float normalised = (float)mappedValue / 1023.0;
   
-  float skewed = std::pow(normalised, skew);
+  float skewed = pow(normalised, skew);
   
   return static_cast<int> (skewed * 1023);
 }
@@ -48,8 +51,11 @@ void loop() {
 
   //update handbrake axis
   int pot    = analogRead( A0 );
-  pot        = constrain( pot, 50, 750 );
-  int mapped = map( pot, 50, 750, 0, 255 );
+
+  int skewed = mediumCurveLUT.getMappedValue(pot);
+  
+  skewed       = constrain( skewed, 50, 750 );
+  int mapped = map( skewed, 50, 750, 0, 255 );
   Joystick.setXAxis( mapped );
 
 
