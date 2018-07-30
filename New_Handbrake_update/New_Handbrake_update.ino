@@ -57,7 +57,7 @@ void loop() {
   //if more than half way along travel, set buttonState to 1.
   int currentHandbrakeButtonState = 0;
   
-  if ( mapped >= 127 ) 
+  if ( mapped > 127 ) 
     currentHandbrakeButtonState = 1;
   
 
