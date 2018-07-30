@@ -14,29 +14,31 @@ class PowLUT
 	
 public:
 
-	PowLUT() : _tableSize(32)
+	PowLUT() 
+		: _tableSize(32)
 	{
 	}
 
-  PowLUT(float skewFactor, int steps = 32, int range = 1024) : _tableSize(steps)
-  {
-    setLUT(skewFactor, steps, range);
-  }
+  	PowLUT(float skewFactor, int steps = 32, int range = 1024) 
+		: _tableSize(steps)
+  	{
+    	setLUT(skewFactor, steps, range);
+  	}
 
 
-  ~PowLUT() {}
+  	~PowLUT() {}
 
 	void setLUT(float skew, int steps, int range)
 	{
-    steps = constrain(steps, 0, 32);
+    	steps = constrain(steps, 0, 32);
     
 		_tableSize = steps;
-    int rows = steps;
+    	int rows = steps;
 		int cols = 2;
 		int value = 0;
 		int offset = range / rows;
 
-    //initialize table to 0's
+    	//initialize table to 0's
 		memset(table,0,sizeof(table[0][0] * 32 * 2));
 
 		for (int i = 0; i < rows; i++)
