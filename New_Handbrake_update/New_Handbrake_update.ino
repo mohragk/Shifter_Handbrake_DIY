@@ -35,6 +35,15 @@ void setup() {
 }
 
 
+int getSkewedValue(int mappedValue, float skew)
+{
+  float normalised = (float)mappedValue / 1023.0;
+  
+  float skewed = std::pow(normalised, skew);
+  
+  return static_cast<int> (skewed * 1023);
+}
+
 void loop() {
 
   //update handbrake axis
