@@ -35,6 +35,15 @@ void setup() {
 }
 
 
+int getSkewedValue(int mappedValue, float skew)
+{
+  float normalised = (float)mappedValue / 1023.0;
+  
+  float skewed = std::pow(normalised, skew);
+  
+  return static_cast<int> (skewed * 1023);
+}
+
 void loop() {
 
   //update handbrake axis
@@ -48,7 +57,7 @@ void loop() {
   //if more than half way along travel, set buttonState to 1.
   int currentHandbrakeButtonState = 0;
   
-  if ( mapped >= 127 ) 
+  if ( mapped > 127 ) 
     currentHandbrakeButtonState = 1;
   
 
