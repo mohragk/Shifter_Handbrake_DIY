@@ -6,6 +6,8 @@
 #define MAX_SHIFTER_BTNS 2
 #define PIN_BUTTON_OFFSET 9
 
+#define USE_HANDBRAKE 0
+
 #include "Joystick.h"
 #include "PowLUT.h"
 
@@ -15,14 +17,24 @@ int lastButtonState[MAX_SHIFTER_BTNS];
 int lastHandbrakeButtonState = 0;
 int handbrakeButtonNum = 6;
 
-PowLUT mediumCurveLUT(0.5, 16, 1024);
-
-Joystick_ Joystick(JOYSTICK_DEFAULT_REPORT_ID,JOYSTICK_TYPE_JOYSTICK,
+#if USE_HANDBRAKE
+  PowLUT mediumCurveLUT(0.5, 16, 1024);
+  Joystick_ Joystick(JOYSTICK_DEFAULT_REPORT_ID,JOYSTICK_TYPE_JOYSTICK,
   8, 0,                  // Button Count, Hat Switch Count
   true, false, false,    // X axis, but no Y and, Z
   false, false, false,   // No Rx, Ry, or Rz
   false, false,          // No rudder or throttle
   false, false, false);  // No accelerator, brake, or steering
+#else
+  Joystick_ Joystick(JOYSTICK_DEFAULT_REPORT_ID,JOYSTICK_TYPE_JOYSTICK,
+  MAX_SHIFTER_BTNS, 0,                  // Button Count, Hat Switch Count
+  false, false, false,   // no axis
+  false, false, false,   // No Rx, Ry, or Rz
+  false, false,          // No rudder or throttle
+  false, false, false);  // No accelerator, brake, or steering
+#endif
+
+
 
 
 void setup() {
@@ -49,6 +61,7 @@ int getSkewedValue(int mappedValue, float skew)
 
 void loop() {
 
+#if USE_HANDBRAKE
   //update handbrake axis
   int pot    = analogRead( A0 );
 
@@ -65,14 +78,15 @@ void loop() {
   
   if ( mapped > 127 ) 
     currentHandbrakeButtonState = 1;
-  
+
 
   if (lastHandbrakeButtonState != currentHandbrakeButtonState) 
   {
-  	Joystick.setButton(handbrakeButtonNum, currentHandbrakeButtonState);
-  	lastHandbrakeButtonState = currentHandbrakeButtonState;
+    Joystick.setButton(handbrakeButtonNum, currentHandbrakeButtonState);
+    lastHandbrakeButtonState = currentHandbrakeButtonState;
   }
   
+#endif //USE_HANDBRAKE 
 
   // Read pin values and update shifter buttons
   for (int i = 0; i < MAX_SHIFTER_BTNS; i++)
