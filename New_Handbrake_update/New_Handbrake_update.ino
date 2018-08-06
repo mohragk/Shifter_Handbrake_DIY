@@ -10,6 +10,7 @@
 
 #include "Joystick.h"
 #include "PowLUT.h"
+#include <EEPROM.h>
 
 // Last state of the buttons
 int lastButtonState[MAX_SHIFTER_BTNS];
@@ -17,8 +18,12 @@ int lastButtonState[MAX_SHIFTER_BTNS];
 int lastHandbrakeButtonState = 0;
 int handbrakeButtonNum = 6;
 
+int eeAddress = 0;
+float savedSkewFactor = 0.0f;
+
 #if USE_HANDBRAKE
-  PowLUT mediumCurveLUT(0.5, 16, 1024);
+  PowLUT curveMapLUT(0.5, 16, 1024);
+  
   Joystick_ Joystick(JOYSTICK_DEFAULT_REPORT_ID,JOYSTICK_TYPE_JOYSTICK,
   8, 0,                  // Button Count, Hat Switch Count
   true, false, false,    // X axis, but no Y and, Z
@@ -44,12 +49,17 @@ void setup() {
   pinMode(10, INPUT_PULLUP);
 
   memset(lastButtonState,0,sizeof(lastButtonState));
+ 
+  // get our saved skewFactor
+  EEPROM.get(eeAddress, savedSkewFactor);
+
+  
   
   // Initialize Joystick Library
   Joystick.begin();
 }
 
-
+/*
 int getSkewedValue(int mappedValue, float skew)
 {
   float normalised = (float)mappedValue / 1024;
@@ -58,6 +68,19 @@ int getSkewedValue(int mappedValue, float skew)
   
   return static_cast<int>( ceil(skewed * 1024) );
 }
+*/
+#if USE_HANDBRAKE
+  void updateCurve(float skewFactor)
+  { 
+    if ( skewFactor != savedSkewFactor ) 
+    {
+      curveMapLUT.setLUT(skewFactor, 32, 1024);
+      savedSkewFactor = skewFactor;
+      EEPROM.put(eeAddress, skewFactor);
+    }
+  }
+#endif
+
 
 void loop() {
 
@@ -65,13 +88,11 @@ void loop() {
   //update handbrake axis
   int pot    = analogRead( A0 );
 
-  int skewed = mediumCurveLUT.getMappedValue(pot);
+  int skewed = curveMapLUT.getMappedValue(pot);
   
   skewed       = constrain( skewed, 50, 750 );
   int mapped = map( skewed, 50, 750, 0, 255 );
   Joystick.setXAxis( mapped );
-
-
 
   //if more than half way along travel, set buttonState to 1.
   int currentHandbrakeButtonState = 0;
@@ -85,7 +106,6 @@ void loop() {
     Joystick.setButton(handbrakeButtonNum, currentHandbrakeButtonState);
     lastHandbrakeButtonState = currentHandbrakeButtonState;
   }
-  
 #endif //USE_HANDBRAKE 
 
   // Read pin values and update shifter buttons

@@ -15,39 +15,51 @@ class PowLUT
 public:
 
 	PowLUT() 
-		: _tableSize(32)
+		: _tableSize(32), currentSkewFactor(1.0)
 	{
 	}
 
   	PowLUT(float skewFactor, int steps = 32, int range = 1024) 
-		: _tableSize(steps)
+		: _tableSize(steps), currentSkewFactor(1.0)
   	{
     	setLUT(skewFactor, steps, range);
+      
   	}
 
 
   	~PowLUT() {}
 
-	void setLUT(float skew, int steps, int range)
+	bool setLUT(float skew, int steps, int range)
 	{
-    	steps = constrain(steps, 0, 32);
+    steps = constrain(steps, 0, 32);
     
-		_tableSize = steps;
-    	int rows = steps;
-		int cols = 2;
-		int value = 0;
-		int offset = range / rows;
+    if(steps > 32)
+      return false;
+      
+    if (currentSkewFactor != skew)
+    {
+      _tableSize = steps;
+      int rows = steps;
+      int cols = 2;
+      int value = 0;
+      int offset = range / rows;
+  
+        //initialize table to 0's
+      memset(table,0,sizeof(table[0][0] * 32 * 2));
+  
+      for (int i = 0; i < rows; i++)
+      { 
+        table[i][0] = value;
+        table[i][1] = getSkewedValue(value, skew);
+  
+        value += offset;
+      }
 
-    	//initialize table to 0's
-		memset(table,0,sizeof(table[0][0] * 32 * 2));
+      currentSkewFactor = skew;
+     }
+		
 
-		for (int i = 0; i < rows; i++)
-		{	
-			table[i][0] = value;
-			table[i][1] = getSkewedValue(value, skew);
-
-			value += offset;
-		}
+   return true;
 	}
 
 	int getMappedValue(int input)
@@ -71,6 +83,7 @@ public:
 private:
 	int table[32][2];
 	int _tableSize;
+  float currentSkewFactor;
 
 
 	int getSkewedValue(int value, float skew)
