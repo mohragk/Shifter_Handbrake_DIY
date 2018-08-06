@@ -6,7 +6,8 @@
 #define MAX_SHIFTER_BTNS 2
 #define PIN_BUTTON_OFFSET 9
 
-#define USE_HANDBRAKE 1
+// only compile relevant code when not using handbrake (0)
+#define USE_HANDBRAKE 0
 
 #include "Joystick.h"
 #include "PowLUT.h"
@@ -20,10 +21,11 @@ int handbrakeButtonNum = 6;
 int handBrakeDeadzone = 50;
 
 
-int eeAddress = 0;
+int   eeAddress = 0;
 float eeSkewFactor = 1.0f;
 
 #if USE_HANDBRAKE
+  // create LUT for our curve mapping
   PowLUT curveMapLUT(0.5, 16, 1024);
   
   Joystick_ Joystick(JOYSTICK_DEFAULT_REPORT_ID,JOYSTICK_TYPE_JOYSTICK,
@@ -46,44 +48,35 @@ float eeSkewFactor = 1.0f;
 
 void setup() {
   // Initialize Pins
+#if USE_HANDBRAKE
   pinMode(A0, INPUT);
+   // get our saved skewFactor
+  EEPROM.get(eeAddress, eeSkewFactor);
+  curveMapLUT.setLUT(eeSkewFactor, 32, 1024);
+#endif
+
   pinMode(9, INPUT_PULLUP);
   pinMode(10, INPUT_PULLUP);
 
   memset(lastButtonState,0,sizeof(lastButtonState));
  
-  // get our saved skewFactor
-  EEPROM.get(eeAddress, eeSkewFactor);
-
-  
-  
   // Initialize Joystick Library
   Joystick.begin();
 }
 
-/*
-int getSkewedValue(int mappedValue, float skew)
-{
-  float normalised = (float)mappedValue / 1024;
-  
-  float skewed = pow(normalised, skew);
-  
-  return static_cast<int>( ceil(skewed * 1024) );
-}
-*/
+
 #if USE_HANDBRAKE
   void updateCurve(float skewFactor)
   { 
-    if ( skewFactor != eeSkewFactor ) 
+    float sf = skewFactor;
+    if ( sf != eeSkewFactor ) 
     {
-      curveMapLUT.setLUT(skewFactor, 32, 1024);
-      eeSkewFactor = skewFactor;
-      EEPROM.put(eeAddress, skewFactor);
+      curveMapLUT.setLUT(s, 32, 1024);
+      
+      EEPROM.put(eeAddress, sf);
+      eeSkewFactor = sf;
     }
   }
-
-
-
 #endif
 
 
@@ -92,9 +85,6 @@ void loop() {
 #if USE_HANDBRAKE
   //update handbrake axis
   int pot    = analogRead( A0 );
-
-  
-
   int skewed = curveMapLUT.getMappedValue(pot);
   
   int range = 1023;
@@ -107,10 +97,7 @@ void loop() {
 
   //if more than half way along travel, set buttonState to 1.
   int currentHandbrakeButtonState = 0;
-  
-  if ( mapped > 127 ) 
-    currentHandbrakeButtonState = 1;
-
+  if ( mapped > 127 ) currentHandbrakeButtonState = 1;
 
   if (lastHandbrakeButtonState != currentHandbrakeButtonState) 
   {
