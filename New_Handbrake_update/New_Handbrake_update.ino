@@ -29,18 +29,18 @@ float eeSkewFactor = 1.0f;
     PowLUT curveMapLUT(0.5, 16, 1024);
 
     Joystick_ Joystick(JOYSTICK_DEFAULT_REPORT_ID,JOYSTICK_TYPE_JOYSTICK,
-    8, 0,                  // Button Count, Hat Switch Count
-    true, false, false,    // X axis, but no Y and, Z
-    false, false, false,   // No Rx, Ry, or Rz
-    false, false,          // No rudder or throttle
-    false, false, false);  // No accelerator, brake, or steering
+        8, 0,                  // Button Count, Hat Switch Count
+        true, false, false,    // X axis, but no Y and, Z
+        false, false, false,   // No Rx, Ry, or Rz
+        false, false,          // No rudder or throttle
+        false, false, false);  // No accelerator, brake, or steering
     #else
     Joystick_ Joystick(JOYSTICK_DEFAULT_REPORT_ID,JOYSTICK_TYPE_JOYSTICK,
-    MAX_SHIFTER_BTNS, 0,                  // Button Count, Hat Switch Count
-    false, false, false,   // no axis
-    false, false, false,   // No Rx, Ry, or Rz
-    false, false,          // No rudder or throttle
-    false, false, false);  // No accelerator, brake, or steering
+        MAX_SHIFTER_BTNS, 0,                  // Button Count, Hat Switch Count
+        false, false, false,   // no axis
+        false, false, false,   // No Rx, Ry, or Rz
+        false, false,          // No rudder or throttle
+        false, false, false);  // No accelerator, brake, or steering
 #endif
 
 #if USE_HANDBRAKE
