@@ -6,7 +6,7 @@
 #define MAX_SHIFTER_BTNS 2
 #define PIN_BUTTON_OFFSET 9
 
-#define USE_HANDBRAKE 0
+#define USE_HANDBRAKE 1
 
 #include "Joystick.h"
 #include "PowLUT.h"
@@ -17,9 +17,11 @@ int lastButtonState[MAX_SHIFTER_BTNS];
 
 int lastHandbrakeButtonState = 0;
 int handbrakeButtonNum = 6;
+int handBrakeDeadzone = 50;
+
 
 int eeAddress = 0;
-float savedSkewFactor = 0.0f;
+float eeSkewFactor = 1.0f;
 
 #if USE_HANDBRAKE
   PowLUT curveMapLUT(0.5, 16, 1024);
@@ -51,7 +53,7 @@ void setup() {
   memset(lastButtonState,0,sizeof(lastButtonState));
  
   // get our saved skewFactor
-  EEPROM.get(eeAddress, savedSkewFactor);
+  EEPROM.get(eeAddress, eeSkewFactor);
 
   
   
@@ -72,13 +74,16 @@ int getSkewedValue(int mappedValue, float skew)
 #if USE_HANDBRAKE
   void updateCurve(float skewFactor)
   { 
-    if ( skewFactor != savedSkewFactor ) 
+    if ( skewFactor != eeSkewFactor ) 
     {
       curveMapLUT.setLUT(skewFactor, 32, 1024);
-      savedSkewFactor = skewFactor;
+      eeSkewFactor = skewFactor;
       EEPROM.put(eeAddress, skewFactor);
     }
   }
+
+
+
 #endif
 
 
@@ -88,10 +93,16 @@ void loop() {
   //update handbrake axis
   int pot    = analogRead( A0 );
 
+  
+
   int skewed = curveMapLUT.getMappedValue(pot);
   
-  skewed       = constrain( skewed, 50, 750 );
-  int mapped = map( skewed, 50, 750, 0, 255 );
+  int range = 1023;
+  int prezone = handBrakeDeadzone;
+  int endzone = range - handBrakeDeadzone;
+  skewed       = constrain( skewed, prezone, endzone );
+  
+  int mapped = map( skewed, prezone, endzone, 0, 255 );
   Joystick.setXAxis( mapped );
 
   //if more than half way along travel, set buttonState to 1.
