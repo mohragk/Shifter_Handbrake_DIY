@@ -31,35 +31,34 @@ public:
 
 	bool setLUT(float skew, int steps, int range)
 	{
-    steps = constrain(steps, 0, 32);
-    
-    if(steps > 32)
-      return false;
-      
-    if (currentSkewFactor != skew)
-    {
-      _tableSize = steps;
-      int rows = steps;
-      int cols = 2;
-      int value = 0;
-      int offset = range / rows;
-  
-        //initialize table to 0's
-      memset(table,0,sizeof(table[0][0] * 32 * 2));
-  
-      for (int i = 0; i < rows; i++)
-      { 
-        table[i][0] = value;
-        table[i][1] = getSkewedValue(value, skew);
-  
-        value += offset;
-      }
+	    steps = constrain(steps, 0, 32);
+	    
+	    if(steps > 32)
+	      return false;
+	      
+	    if (currentSkewFactor != skew)
+	    {
+			_tableSize = steps;
+			int rows = steps;
+			int cols = 2;
+			int value = 0;
+			int offset = range / rows;
 
-      currentSkewFactor = skew;
-     }
-		
+			//initialize table to 0's
+			memset(table,0,sizeof(table[0][0] * 32 * 2));
 
-   return true;
+			for (int i = 0; i < rows; i++)
+			{ 
+				table[i][0] = value;
+				table[i][1] = getSkewedValue(value, skew, range);
+
+				value += offset;
+			}
+
+			currentSkewFactor = skew;
+		}
+
+		return true;
 	}
 
 	int getMappedValue(int input)
@@ -83,20 +82,21 @@ public:
 private:
 	int table[32][2];
 	int _tableSize;
-  float currentSkewFactor;
+	float currentSkewFactor;
+	int currentRange;
 
 
-	int getSkewedValue(int value, float skew)
+	int getSkewedValue(int value, float skew, int range)
 	{
-    if (skew = 1.0)
-      return value;
-  
-	  float normalised = (float)value / 1024;
-	  float skewed = pow(normalised, skew);
-	  
-	  return static_cast<int> (skewed * 1024);
+		if (skew = 1.0)
+			return value;
+
+		float normalised = (float)value / range;
+		float skewed = pow(normalised, skew);
+
+		return static_cast<int> (skewed * range);
 	}
- 
+
 };
 
 

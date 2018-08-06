@@ -43,81 +43,77 @@ float eeSkewFactor = 1.0f;
   false, false, false);  // No accelerator, brake, or steering
 #endif
 
-
-
-
-void setup() {
-  // Initialize Pins
 #if USE_HANDBRAKE
-  pinMode(A0, INPUT);
-   // get our saved skewFactor
-  EEPROM.get(eeAddress, eeSkewFactor);
-  curveMapLUT.setLUT(eeSkewFactor, 32, 1024);
+	void updateCurve(float skewFactor)
+	{ 
+		float currentSkew = skewFactor;
+		if ( currentSkew != eeSkewFactor ) 
+		{
+			curveMapLUT.setLUT(currentSkew, 32, 1024);
+
+			EEPROM.put(eeAddress, currentSkew);
+			eeSkewFactor = currentSkew;
+		}
+	}
 #endif
 
-  pinMode(9, INPUT_PULLUP);
-  pinMode(10, INPUT_PULLUP);
 
-  memset(lastButtonState,0,sizeof(lastButtonState));
- 
-  // Initialize Joystick Library
-  Joystick.begin();
+void setup() 
+{
+	// Initialize Pins
+#if USE_HANDBRAKE
+	pinMode(A0, INPUT);
+	// get our saved skewFactor and reset LUT
+	EEPROM.get(eeAddress, eeSkewFactor);
+	curveMapLUT.setLUT(eeSkewFactor, 32, 1024);
+#endif
+
+	pinMode(9, INPUT_PULLUP);
+	pinMode(10, INPUT_PULLUP);
+
+	memset(lastButtonState,0,sizeof(lastButtonState));
+
+	// Initialize Joystick Library
+	Joystick.begin();
 }
-
-
-#if USE_HANDBRAKE
-  void updateCurve(float skewFactor)
-  { 
-    float sf = skewFactor;
-    if ( sf != eeSkewFactor ) 
-    {
-      curveMapLUT.setLUT(s, 32, 1024);
-      
-      EEPROM.put(eeAddress, sf);
-      eeSkewFactor = sf;
-    }
-  }
-#endif
 
 
 void loop() {
 
 #if USE_HANDBRAKE
-  //update handbrake axis
-  int pot    = analogRead( A0 );
-  int skewed = curveMapLUT.getMappedValue(pot);
-  
-  int range = 1023;
-  int prezone = handBrakeDeadzone;
-  int endzone = range - handBrakeDeadzone;
-  skewed       = constrain( skewed, prezone, endzone );
-  
-  int mapped = map( skewed, prezone, endzone, 0, 255 );
-  Joystick.setXAxis( mapped );
+	//update handbrake axis
+	int pot    = analogRead( A0 );
+	int skewed = curveMapLUT.getMappedValue( pot );
 
-  //if more than half way along travel, set buttonState to 1.
-  int currentHandbrakeButtonState = 0;
-  if ( mapped > 127 ) currentHandbrakeButtonState = 1;
+	int range = 1023;
+	int pre = handBrakeDeadzone;
+	int end = range - handBrakeDeadzone;
+	skewed       = constrain( skewed, pre, end );
 
-  if (lastHandbrakeButtonState != currentHandbrakeButtonState) 
-  {
-    Joystick.setButton(handbrakeButtonNum, currentHandbrakeButtonState);
-    lastHandbrakeButtonState = currentHandbrakeButtonState;
-  }
+	int mapped = map( skewed, pre, end, 0, 255 );
+	Joystick.setXAxis( mapped );
+
+	//if more than half way along travel, set buttonState to 1.
+	int currentHandbrakeButtonState = 0;
+	if ( mapped > 127 ) currentHandbrakeButtonState = 1;
+
+	if (lastHandbrakeButtonState != currentHandbrakeButtonState) 
+	{
+		Joystick.setButton(handbrakeButtonNum, currentHandbrakeButtonState);
+		lastHandbrakeButtonState = currentHandbrakeButtonState;
+	}
 #endif //USE_HANDBRAKE 
 
-  // Read pin values and update shifter buttons
-  for (int i = 0; i < MAX_SHIFTER_BTNS; i++)
-  {
-    int currentButtonState = !digitalRead(i + PIN_BUTTON_OFFSET);
+  	// Read pin values and update shifter buttons
+	for (int i = 0; i < MAX_SHIFTER_BTNS; i++)
+	{
+		int currentButtonState = !digitalRead(i + PIN_BUTTON_OFFSET);
 
-    if (currentButtonState != lastButtonState[i])
-    {
-      Joystick.setButton(i, currentButtonState);
-      lastButtonState[i] = currentButtonState;
-    }
-  }
-
-
+		if (currentButtonState != lastButtonState[i])
+		{
+			Joystick.setButton(i, currentButtonState);
+			lastButtonState[i] = currentButtonState;
+		}
+	}
 }
 
