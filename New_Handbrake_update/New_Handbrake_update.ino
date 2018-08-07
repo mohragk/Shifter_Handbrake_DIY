@@ -13,8 +13,8 @@
 #define PIN_BUTTON_OFFSET 9
 
 // only compile relevant code when not using handbrake (0)
-#define USE_HANDBRAKE false
-#define USE_SERIAL 0
+#define USE_HANDBRAKE 1
+#define USE_SERIAL 1
 
 // Last state of the buttons
 int lastButtonState[MAX_SHIFTER_BTNS];
@@ -26,6 +26,7 @@ float skewFactor = 1.0f;
 int deadZone = 0;
 
 
+int testBrakePos = 0;
 
 
 #if USE_HANDBRAKE
@@ -120,7 +121,7 @@ int deadZone = 0;
     {
 
         float norm = (float)value / 1024;
-        float skewed = pow( norm, skew );
+        float skewed = pow( norm, 2.0f - skew );
     
         return static_cast<int> (round( skewed * 1024) );
     }
@@ -161,15 +162,18 @@ void loop() {
 #if USE_HANDBRAKE
     //update handbrake axis
     int pot    = analogRead( A0 );
+
+    #if USE_SERIAL
+    pot = testBrakePos;
+    #endif
   
     int skewed = getSkewedValue(pot, skewFactor);
     skewed     = constrain(skewed, deadZone, 1023);
-    int mapped = map(skewed, deadZone, 1023, 0, 255);
-    Joystick.setXAxis(mapped);
+    Joystick.setXAxis(skewed);
     
     //if more than half way along travel, set buttonState to 1.
     int currentHandbrakeButtonState = 0;
-    if ( mapped > 127 ) currentHandbrakeButtonState = 1;
+    if ( skewed > 512 ) currentHandbrakeButtonState = 1;
 
     if (lastHandbrakeButtonState != currentHandbrakeButtonState) 
     {
