@@ -5,30 +5,27 @@
 // Serial command protocol: # NAME VALUE /n (without spaces)
 //-----------------------------
 
-#define MAX_SHIFTER_BTNS 2
-#define PIN_BUTTON_OFFSET 9
-
-// only compile relevant code when not using handbrake (0)
-#define USE_HANDBRAKE 1
-#define ANALOG_TEST 1
 
 #include "Joystick.h"
 
 
-int testBrakePos = 0;
+#define MAX_SHIFTER_BTNS 2
+#define PIN_BUTTON_OFFSET 9
+
+// only compile relevant code when not using handbrake (0)
+#define USE_HANDBRAKE false
+#define USE_SERIAL 0
 
 // Last state of the buttons
 int lastButtonState[MAX_SHIFTER_BTNS];
 
 int lastHandbrakeButtonState = 0;
 int handbrakeButtonNum = 6;
+
 float skewFactor = 1.0f;
 int deadZone = 0;
 
-// serial variables
-String  inputString = "";         // a string to hold incoming data
-boolean stringComplete = false;  // whether the string is complete
-String  commandString = "";
+
 
 
 #if USE_HANDBRAKE
@@ -47,7 +44,13 @@ String  commandString = "";
         false, false, false);  // No accelerator, brake, or steering
 #endif
 
-#if USE_HANDBRAKE
+#if USE_SERIAL
+    // serial variables
+    String  inputString = "";         // a string to hold incoming data
+    boolean stringComplete = false;  // whether the string is complete
+    String  commandString = "";
+
+    
     void serialEvent(String& output)
     {
         while (Serial.available()) 
@@ -109,8 +112,10 @@ String  commandString = "";
              
         }
     }
+#endif //USE_SERIAL
 
 
+#if USE_HANDBRAKE
     int getSkewedValue(int value, float skew)
     {
 
@@ -132,7 +137,10 @@ void setup()
     
 #if USE_HANDBRAKE
     pinMode(A0, INPUT);
-    Serial.begin(9600);
+#endif
+
+#if USE_SERIAL
+  Serial.begin(9600);
 #endif
 
     memset( lastButtonState, 0, sizeof(lastButtonState) );
@@ -145,17 +153,14 @@ void setup()
 
 void loop() {
 
-#if USE_HANDBRAKE
-
+#if USE_SERIAL
     serialEvent(inputString);
     parseCommand(inputString);
+#endif
 
+#if USE_HANDBRAKE
     //update handbrake axis
     int pot    = analogRead( A0 );
-
-  #if ANALOG_TEST
-    pot = testBrakePos;
-  #endif
   
     int skewed = getSkewedValue(pot, skewFactor);
     skewed     = constrain(skewed, deadZone, 1023);
@@ -184,5 +189,7 @@ void loop() {
             lastButtonState[i] = currentButtonState;
         }
     }
+
+    delay(10);
 }
 
