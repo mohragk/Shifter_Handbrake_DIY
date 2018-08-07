@@ -5,8 +5,9 @@ Serial port;
 
 ControlP5 cp5;
 CallbackListener cb;
-Slider cSlider, zSlider;
+Slider cSlider, zSlider, testSlider;
 ScrollableList portSelector;
+Textlabel info;
 
 PFont font;
 PImage curveImg;
@@ -14,14 +15,20 @@ PImage curveImg;
 
 void setup()
 {
-  size(360, 560);
-  smooth(16);
-  curveImg = createImage(200 , 200, ARGB);
+    size(360, 560);
+    curveImg = createImage(200 , 200, ARGB);
+    
+    port = new Serial(this, Serial.list()[1], 9600);
+    
+    cp5 = new ControlP5(this);
+    font = createFont("Futura", 11);
   
-  port = new Serial(this, Serial.list()[1], 9600);
-  
-  cp5 = new ControlP5(this);
-  font = createFont("Futura", 20);
+    info = cp5.addTextlabel("label")
+      .setText("Info")
+      .setPosition(30,height - 30)
+      .setColorValue(color(255,255,255))
+      .setFont(font)
+      ;
   
     portSelector = cp5.addScrollableList("portSelect")
      .setPosition(40, 40)
@@ -41,6 +48,7 @@ void setup()
     .setSize(200,20)
     .setTriggerEvent(Slider.PRESS)
     .setLabel("Curvature")
+    .setSliderMode(Slider.FIX)
     ;
     
   // add callback to only send data when released  
@@ -49,6 +57,7 @@ void setup()
       public void controlEvent(CallbackEvent theEvent) {
         if (   theEvent.getAction()==ControlP5.ACTION_RELEASE 
             || theEvent.getAction()==ControlP5.ACTION_RELEASE_OUTSIDE
+            || theEvent.getAction()==ControlP5.ACTION_WHEEL
             ) 
         {
           createAndSendCommand(1023 - (int)cSlider.getValue(), "#SKEW");
@@ -67,6 +76,13 @@ void setup()
     .setLabel("Deadzone");
     ;
   
+  testSlider = cp5.addSlider("handBrakeTest")
+    .setRange(0, 1023)
+    .setValue(0)
+    .setPosition(width - 40, 30)
+    .setSize(10, 200)
+    .setLabel("Handbrake")
+    ;
 }
 
 
@@ -87,7 +103,7 @@ void draw()
     String inBuffer = port.readString();   
     if (inBuffer != null) 
     {
-      println(inBuffer);
+      info.setText(inBuffer);
     }
   }
   
@@ -147,15 +163,17 @@ void curveSlider(int value)
 
 void deadzoneSlider(int value)
 {
-    String message = "#ZONE";
-    message += str(value);
-    message += "\n";
-    
-    port.write(message);
+     createAndSendCommand(value, "#ZONE");
 }
 
-void portSelect(int n) {
-  setPort( n );
+void portSelect(int n) 
+{
+    setPort( n );
+}
+
+void handBrakeTest(int val)
+{
+    createAndSendCommand(val, "#TEST"); 
 }
 
 void createAndSendCommand(int val, String name)

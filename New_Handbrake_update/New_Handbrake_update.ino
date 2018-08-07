@@ -10,12 +10,12 @@
 
 // only compile relevant code when not using handbrake (0)
 #define USE_HANDBRAKE 1
+#define ANALOG_TEST 1
 
 #include "Joystick.h"
 
 
-//DEBUGGING
-int ledPin = 13;
+int testBrakePos = 0;
 
 // Last state of the buttons
 int lastButtonState[MAX_SHIFTER_BTNS];
@@ -94,6 +94,14 @@ String  commandString = "";
                 Serial.print(deadZone);
                 Serial.println();
              }
+             else if ( command.equals("TEST") )
+             {
+                String value = input.substring(5,9);
+                testBrakePos = value.toInt();
+                Serial.print("HB Test command received: ");
+                Serial.print(testBrakePos);
+                Serial.println();
+             }
              
              
              input = "";
@@ -106,9 +114,10 @@ String  commandString = "";
     int getSkewedValue(int value, float skew)
     {
 
-        float skewed = pow( static_cast<float>(value), skew );
+        float norm = (float)value / 1024;
+        float skewed = pow( norm, skew );
     
-        return static_cast<int> (skewed);
+        return static_cast<int> (round( skewed * 1024) );
     }
 
 #endif //USE_HANDBRAKE
@@ -123,7 +132,6 @@ void setup()
     
 #if USE_HANDBRAKE
     pinMode(A0, INPUT);
-    pinMode(ledPin, OUTPUT);
     Serial.begin(9600);
 #endif
 
@@ -143,7 +151,12 @@ void loop() {
     parseCommand(inputString);
 
     //update handbrake axis
-    int pot    = 512; //analogRead( A0 );
+    int pot    = analogRead( A0 );
+
+  #if ANALOG_TEST
+    pot = testBrakePos;
+  #endif
+  
     int skewed = getSkewedValue(pot, skewFactor);
     skewed     = constrain(skewed, deadZone, 1023);
     int mapped = map(skewed, deadZone, 1023, 0, 255);
