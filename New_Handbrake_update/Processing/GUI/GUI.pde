@@ -21,7 +21,15 @@ void setup()
   cp5.addSlider("curveSlider")
     .setRange(0, 1023 - 256)
     .setValue(0)
-    .setPosition(width * 0.1, height*0.1)
+    .setPosition(width * 0.25, height*0.1)
+    .setSize(20,200)
+    .setTriggerEvent(Slider.RELEASE)
+    ;
+    
+  cp5.addSlider("deadzoneSlider")
+    .setRange(0, 1023 - 256)
+    .setValue(0)
+    .setPosition(width * 0.75, height*0.1)
     .setSize(20,200)
     .setTriggerEvent(Slider.RELEASE)
     ;
@@ -48,6 +56,26 @@ void curveSlider(int value)
 {
     String message = "#SKEW";
     message += str(1023 - value);
+    message += "\n";
+    
+    port.write(message);
+}
+
+
+void deadzoneSlider(int value)
+{
+    String message = "#ZONE";
+    message += str(value);
+    message += "\n";
+    
+    port.write(message);
+}
+
+
+void createAndSendCommand(int val, String name)
+{
+    String message = name;
+    message += str(val);
     message += "\n";
     
     port.write(message);

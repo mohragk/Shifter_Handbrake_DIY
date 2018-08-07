@@ -23,6 +23,7 @@ int lastButtonState[MAX_SHIFTER_BTNS];
 int lastHandbrakeButtonState = 0;
 int handbrakeButtonNum = 6;
 float skewFactor = 1.0f;
+int deadZone = 0;
 
 // serial variables
 String  inputString = "";         // a string to hold incoming data
@@ -77,13 +78,21 @@ String  commandString = "";
         {
              String command = getCommand(input);
 
-             if ( command.equals("SKEW") )
+             if      ( command.equals("SKEW") )
              {
                  String value = input.substring(5,9);
                  skewFactor = static_cast<float>( value.toInt() ) / 1024;
                  Serial.print("Skew command received: ");
                  Serial.print(skewFactor);
                  Serial.println();
+             }
+             else if ( command.equals("ZONE") )
+             {
+                String value = input.substring(5,9);
+                deadZone = value.toInt();
+                Serial.print("Deadzone command received: ");
+                Serial.print(deadZone);
+                Serial.println();
              }
              
              
@@ -136,8 +145,8 @@ void loop() {
     //update handbrake axis
     int pot    = 512; //analogRead( A0 );
     int skewed = getSkewedValue(pot, skewFactor);
-    //skewed     = constrain(skewed, 50, 750);
-    int mapped = map(skewed, 0, 1023, 0, 255);
+    skewed     = constrain(skewed, deadZone, 1023);
+    int mapped = map(skewed, deadZone, 1023, 0, 255);
     Joystick.setXAxis(mapped);
     
     //if more than half way along travel, set buttonState to 1.
