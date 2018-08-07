@@ -134,10 +134,10 @@ void loop() {
     parseCommand(inputString);
 
     //update handbrake axis
-    int pot    = analogRead( A0 );
+    int pot    = 512; //analogRead( A0 );
     int skewed = getSkewedValue(pot, skewFactor);
-    skewed     = constrain(skewed, 50, 750);
-    int mapped = map(skewed, 50, 750, 0, 255);
+    //skewed     = constrain(skewed, 50, 750);
+    int mapped = map(skewed, 0, 1023, 0, 255);
     Joystick.setXAxis(mapped);
     
     //if more than half way along travel, set buttonState to 1.

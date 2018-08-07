@@ -19,8 +19,8 @@ void setup()
   
     
   cp5.addSlider("curveSlider")
-    .setRange(256, 1023)
-    .setValue(1023)
+    .setRange(0, 1023 - 256)
+    .setValue(0)
     .setPosition(width * 0.1, height*0.1)
     .setSize(20,200)
     .setTriggerEvent(Slider.RELEASE)
@@ -37,14 +37,18 @@ void draw()
       println(inBuffer);
     }
   }
+  
+  float val = cp5.getController("curveSlider").getValue();
+  float mapped = map(val, 0, 1023, 50, 220);
+  background(color((int)mapped));
+  
 }
 
 void curveSlider(int value)
 {
     String message = "#SKEW";
-    message += str(value);
+    message += str(1023 - value);
     message += "\n";
     
     port.write(message);
-    println(message);
 }
