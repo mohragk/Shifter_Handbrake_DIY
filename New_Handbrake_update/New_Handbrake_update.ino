@@ -14,6 +14,9 @@
 #include "Joystick.h"
 
 
+//DEBUGGING
+int ledPin = 13;
+
 // Last state of the buttons
 int lastButtonState[MAX_SHIFTER_BTNS];
 
@@ -55,6 +58,7 @@ String  commandString = "";
           // so the main loop can do something about it:
           if (inChar == '\n') {
             stringComplete = true;
+            
           }
       }
     }
@@ -77,7 +81,11 @@ String  commandString = "";
              {
                  String value = input.substring(5,9);
                  skewFactor = static_cast<float>( value.toInt() ) / 1024;
+                 Serial.print("Skew command received: ");
+                 Serial.print(skewFactor);
+                 Serial.println();
              }
+             
              
              input = "";
              stringComplete = false;
@@ -106,6 +114,7 @@ void setup()
     
 #if USE_HANDBRAKE
     pinMode(A0, INPUT);
+    pinMode(ledPin, OUTPUT);
     Serial.begin(9600);
 #endif
 
