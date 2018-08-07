@@ -6,6 +6,7 @@ Serial port;
 ControlP5 cp5;
 CallbackListener cb;
 Slider cSlider, zSlider;
+ScrollableList portSelector;
 
 PFont font;
 PImage curveImg;
@@ -13,35 +14,37 @@ PImage curveImg;
 
 void setup()
 {
-  size(640, 560);
-  curveImg = createImage(120 , 120, ARGB);
-  
-  printArray(Serial.list());
+  size(360, 560);
+  smooth(16);
+  curveImg = createImage(200 , 200, ARGB);
   
   port = new Serial(this, Serial.list()[1], 9600);
   
   cp5 = new ControlP5(this);
   font = createFont("Futura", 20);
   
-  
+    portSelector = cp5.addScrollableList("portSelect")
+     .setPosition(40, 40)
+     .setSize(200, 100)
+     .setBarHeight(20)
+     .setItemHeight(20)
+     .addItems(Serial.list())
+     .close()
+     .setType(ScrollableList.DROPDOWN)
+     .setLabel("Select Port")
+     ;
   
   cSlider = cp5.addSlider("curveSlider")
     .setRange(0, 1023 - 256)
     .setValue(0)
-    .setPosition(width * 0.1 - 20, curveImg.height + 80)
+    .setPosition(40, curveImg.height + 200)
     .setSize(200,20)
     .setTriggerEvent(Slider.PRESS)
+    .setLabel("Curvature")
     ;
     
-  zSlider = cp5.addSlider("deadzoneSlider")
-    .setRange(0, 512)
-    .setValue(0)
-    .setPosition(width * 0.75 - 20, height * 0.1)
-    .setSize(20,200)
-    .setTriggerEvent(Slider.RELEASE)
-    ;
-    
-   cSlider.addCallback(new CallbackListener() 
+  // add callback to only send data when released  
+  cSlider.addCallback(new CallbackListener() 
      {
       public void controlEvent(CallbackEvent theEvent) {
         if (   theEvent.getAction()==ControlP5.ACTION_RELEASE 
@@ -53,12 +56,28 @@ void setup()
       }
     }
   );
-
-
+  
+  
+  zSlider = cp5.addSlider("deadzoneSlider")
+    .setRange(0, 512)
+    .setValue(0)
+    .setPosition(40, height - 120)
+    .setSize(200,20)
+    .setTriggerEvent(Slider.RELEASE)
+    .setLabel("Deadzone");
+    ;
   
 }
 
 
+void setPort(int num)
+{
+    //port = null;
+    port.clear();
+    port.stop();
+    
+    port = new Serial(this, Serial.list()[num], 9600);
+}
 
 void draw()
 {
@@ -66,11 +85,11 @@ void draw()
   
   while (port.available() > 0) {
     String inBuffer = port.readString();   
-    if (inBuffer != null) {
+    if (inBuffer != null) 
+    {
       println(inBuffer);
     }
   }
-  
   
   drawImage(curveImg);
 }
@@ -90,9 +109,9 @@ void fillImage(PImage img, float skew)
     
         y = round( getSkewedValue((int)x, skew) );
         y = round(map(y, 0, 1023, 0 , img.width));
-        int strokewidth = 1;
+        int strokewidth = 2;
         
-        if ( y <= i % img.width && y + strokewidth >= i % img.width )
+        if ( y - strokewidth <= i % img.width && y >= i % img.width )
           img.pixels[i] = color(255, 255, 255, 220);
         else
           img.pixels[i] = color(255, 255, 255, 0);
@@ -107,7 +126,7 @@ void fillImage(PImage img, float skew)
 
 void drawImage(PImage img)
 {
-    image(img, width * 0.1 - 20, 40);
+    image(img, 40, 120);
 }
 
 int getSkewedValue(int value, float skew)
@@ -120,17 +139,9 @@ int getSkewedValue(int value, float skew)
 
 void curveSlider(int value)
 {
-    /*  
-    String message = "#SKEW";
-    message += str(1023 - value);
-    message += "\n";
-    
-    port.write(message);
-    */
-    
+    // update image
     float skewFactor = (1023 - (float)value) / 1024;
     fillImage(curveImg, skewFactor);
-   
 }
 
 
@@ -143,6 +154,9 @@ void deadzoneSlider(int value)
     port.write(message);
 }
 
+void portSelect(int n) {
+  setPort( n );
+}
 
 void createAndSendCommand(int val, String name)
 {
@@ -150,5 +164,6 @@ void createAndSendCommand(int val, String name)
     message += str(val);
     message += "\n";
     
-    port.write(message);
+    if (port != null)
+      port.write(message);
 }
