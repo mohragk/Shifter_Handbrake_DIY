@@ -2,7 +2,7 @@
 // - Connect microswitches from shifter to pin 9 and 10
 // - Connect  10k potentiometer from handbrake to A0
 //
-// Serial command protocol: # NAME VALUE /n (without spaces)
+// Serial command protocol: # NAME VALUE \n (without spaces)
 //-----------------------------
 
 
