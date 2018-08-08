@@ -52,12 +52,12 @@ int testBrakePos = 0;
     String  commandString = "";
 
     
-    void serialEvent(String& output)
+    void serialEventRun()
     {
         while (Serial.available()) 
         {
           char inChar = (char)( Serial.read() );
-          output += inChar;
+          inputString += inChar;
           
           // if the incoming character is a newline, set a flag
           // so the main loop can do something about it:
@@ -155,7 +155,6 @@ void setup()
 void loop() {
 
 #if USE_SERIAL
-    serialEvent(inputString);
     parseCommand(inputString);
 #endif
 
