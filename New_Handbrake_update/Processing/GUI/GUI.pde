@@ -18,8 +18,12 @@ void setup()
     size(360, 560);
     curveImg = createImage(200 , 200, ARGB);
     
-    port = new Serial(this, Serial.list()[1], 9600);
-    
+    if (Serial.list().length > 1)
+        port = new Serial(this, Serial.list()[1], 9600);
+    else
+        port = new Serial(this, Serial.list()[0], 9600);
+        
+        
     cp5 = new ControlP5(this);
     font = createFont("Futura", 11);
   
