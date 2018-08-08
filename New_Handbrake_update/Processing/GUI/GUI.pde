@@ -171,15 +171,15 @@ void portSelect(int n)
     setPort( n );
 }
 
-void handBrakeTest(int val)
+void handBrakeTest(int value)
 {
-    createAndSendCommand(val, "#TEST"); 
+    createAndSendCommand(value, "#TEST"); 
 }
 
-void createAndSendCommand(int val, String name)
+void createAndSendCommand(int value, String name)
 {
     String message = name;
-    message += str(val);
+    message += str(value);
     message += "\n";
     
     if (port != null)
