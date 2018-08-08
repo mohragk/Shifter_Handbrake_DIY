@@ -25,7 +25,8 @@ int handbrakeButtonNum = 6;
 float skewFactor = 1.0f;
 int deadZone = 0;
 
-
+// Overrides the AnalogRead value and 
+// should be removed after testing!
 int testBrakePos = 0;
 
 
@@ -163,7 +164,7 @@ void loop() {
     int pot    = analogRead( A0 );
 
     #if USE_SERIAL
-    pot = testBrakePos;
+    pot = testBrakePos; //TEST!
     #endif
   
     int skewed = getSkewedValue(pot, skewFactor);
