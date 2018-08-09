@@ -86,7 +86,7 @@ float timer = 0.0f;
              if      ( command.equals("SKEW") )
              {
                  String value = input.substring(5,9);
-                 skewFactor = static_cast<float>( value.toInt() ) / 1024;
+                 skewFactor = static_cast<float>( value.toInt() ) / 1024.0f;
                  Serial.print("Skew command received: ");
                  Serial.print(skewFactor);
                  Serial.println();
@@ -121,10 +121,10 @@ float timer = 0.0f;
     int getSkewedValue(int value, float skew)
     {
 
-        float norm = (float)value / 1024;
+        float norm = (float)value / 1024.0f;
         float skewed = pow( norm, 2.0f - skew );
     
-        return static_cast<int> (round( skewed * 1024) );
+        return static_cast<int> (round( skewed * 1024.0f) );
     }
 
 #endif //USE_HANDBRAKE
@@ -164,10 +164,10 @@ void loop() {
     int pot    = analogRead( A0 );
 
     #if USE_SERIAL
-      float mod =  ( sin( timer * PI ) + 1.0 ) / 2.0;
-      pot =static_cast<int>( mod * 1023.0 ); //TEST!
+      float mod =  ( sin( timer * PI ) + 1.0f ) / 2.0f;
+      pot =static_cast<int>( mod * 1023.0f ); //TEST!
       Serial.println(pot);
-      timer += 0.001;
+      timer += 0.001f;
     #endif
   
     int skewed = getSkewedValue(pot, skewFactor);
