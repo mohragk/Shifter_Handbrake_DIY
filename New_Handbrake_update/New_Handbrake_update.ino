@@ -62,12 +62,12 @@ float timer = 0.0f;
     void getData()
     {
         static bool inProgress = false;
-        static byte idx = 0;
+        static int idx = 0;
         char beginMarker = '<';
         char endMarker = '>';
         char inChar;
         
-        while (Serial.available() && stringComplete == false) 
+        while (Serial.available() > 0) 
         {
           inChar = Serial.read();
 
@@ -113,6 +113,8 @@ float timer = 0.0f;
         {
             strcpy (tempChars, receivedChars);
             parseData();
+
+           
 
             if      ( strcmp(messageFromGUI, "S") )
             {
@@ -181,7 +183,9 @@ void loop() {
 
 #if USE_SERIAL
    getData();
-   updateValues();
+   //updateValues();
+  if (stringComplete) Serial.println("Hello, Sailor!");
+
 #endif
 
 #if USE_HANDBRAKE
@@ -191,11 +195,10 @@ void loop() {
     #if USE_SERIAL
       float mod =  ( sin( timer * PI ) + 1.0f ) / 2.0f;
       pot =static_cast<int>( mod * 1023.0f ); //TEST!
-      Serial.println(pot);
       timer += 0.001f;
     #endif
   
-    int skewed = getSkewedValue(pot, skewFactor);
+    int skewed = pot; //getSkewedValue(pot, skewFactor);
     skewed     = constrain(skewed, deadZone, 1023);
     Joystick.setXAxis(skewed);
     

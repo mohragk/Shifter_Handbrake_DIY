@@ -64,7 +64,7 @@ void setup()
             || theEvent.getAction()==ControlP5.ACTION_WHEEL
             ) 
         {
-          createAndSendCommand(1023 - (int)cSlider.getValue(), "#SKEW");
+          createAndSendCommand(1023 - (int)cSlider.getValue(), "S");
         }
       }
     }
@@ -167,7 +167,7 @@ void curveSlider(int value)
 
 void deadzoneSlider(int value)
 {
-     createAndSendCommand(value, "#ZONE");
+     createAndSendCommand(value, "Z");
 }
 
 void portSelect(int n) 
@@ -177,14 +177,15 @@ void portSelect(int n)
 
 void handBrakeTest(int value)
 {
-    createAndSendCommand(value, "#TEST"); 
+    createAndSendCommand(value, "T"); 
 }
 
 void createAndSendCommand(int value, String name)
 {
-    String message = name;
+    String message = "<";
+    message += name;
     message += str(value);
-    message += "\n";
+    message += ">";
     
     if (port != null)
       port.write(message);
