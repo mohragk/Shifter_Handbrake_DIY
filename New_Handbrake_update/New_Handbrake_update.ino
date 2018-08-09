@@ -2,7 +2,7 @@
 // - Connect microswitches from shifter to pin 9 and 10
 // - Connect  10k potentiometer from handbrake to A0
 //
-// Serial command protocol: # NAME VALUE \n (without spaces)
+// Serial command protocol: <I,0000>
 //-----------------------------
 
 
@@ -48,72 +48,100 @@ float timer = 0.0f;
 
 #if USE_SERIAL
     // serial variables
-    String  inputString = "";         // a string to hold incoming data
-    boolean stringComplete = false;  // whether the string is complete
-    String  commandString = "";
+    const byte numChars = 32;
+    char receivedChars[numChars];
+    char tempChars[numChars];
+
+    char messageFromGUI[numChars] = {0};
+    int valueFromGUI = 0;
+    
+    bool stringComplete = false;  // whether the string is complete
+ 
 
     
-    void serialEventRun()
+    void getData()
     {
-        while (Serial.available()) 
+        static bool inProgress = false;
+        static byte idx = 0;
+        char beginMarker = '<';
+        char endMarker = '>';
+        char inChar;
+        
+        while (Serial.available() && stringComplete == false) 
         {
-          char inChar = (char)( Serial.read() );
-          inputString += inChar;
-          
-          // if the incoming character is a newline, set a flag
-          // so the main loop can do something about it:
-          if (inChar == '\n') {
-            stringComplete = true;
-            
+          inChar = Serial.read();
+
+          if (inProgress == true)
+          {
+              if (inChar != endMarker)
+              {
+                  receivedChars[idx] = inChar;
+                  idx++;
+                  if (idx > numChars)
+                      idx = numChars - 1;
+              }
+              else
+              {
+                  receivedChars[idx] = '\0';
+                  inProgress = false;
+                  idx = 0;
+                  stringComplete = true;
+              }
           }
+          else if ( inChar == beginMarker )
+          {
+              inProgress == true;
+          }
+          
       }
     }
-    
-    String getCommand(String input)
+
+    void parseData()
     {
-      if ( input.length() > 0 )
-         return input.substring(1,5); 
-      else
-        return "";
+        char* pchar;
+
+         pchar = strtok(tempChars, ",");  // split part in tempChar
+         strcpy(messageFromGUI, pchar);   // copy first part to messageFromGUI
+  
+         pchar = strtok(NULL, ",");
+         valueFromGUI = atoi(pchar);
     }
     
-    void parseCommand(String& input)
+    void updateValues()
     {
         if (stringComplete)
         {
-             String command = getCommand(input);
+            strcpy (tempChars, receivedChars);
+            parseData();
 
-             if      ( command.equals("SKEW") )
-             {
-                 String value = input.substring(5,9);
-                 skewFactor = static_cast<float>( value.toInt() ) / 1024.0f;
-                 Serial.print("Skew command received: ");
-                 Serial.print(skewFactor);
-                 Serial.println();
-             }
-             else if ( command.equals("ZONE") )
-             {
-                String value = input.substring(5,9);
-                deadZone = value.toInt();
-                Serial.print("Deadzone command received: ");
-                Serial.print(deadZone);
-                Serial.println();
-             }
-             else if ( command.equals("TEST") )
-             {
-                String value = input.substring(5,9);
-                testBrakePos = value.toInt();
-                Serial.print("HB Test command received: ");
-                Serial.print(testBrakePos);
-                Serial.println();
-             }
-             
-             
-             input = "";
-             stringComplete = false;
+            if      ( strcmp(messageFromGUI, "S") )
+            {
+               skewFactor = static_cast<float>( valueFromGUI ) / 1024.0f;
+               Serial.print("Skew command received: ");
+               Serial.print(skewFactor);
+               Serial.println();
+            }
+            else if ( strcmp(messageFromGUI, "Z") )
+            {
+              deadZone = valueFromGUI;
+              Serial.print("Deadzone command received: ");
+              Serial.print(deadZone);
+              Serial.println();
+            }
+            else if ( strcmp(messageFromGUI, "T") )
+            {
+              testBrakePos = valueFromGUI;
+              Serial.print("HB Test command received: ");
+              Serial.print(testBrakePos);
+              Serial.println();
+           }
+           
+           stringComplete = false;
              
         }
     }
+
+
 #endif //USE_SERIAL
 
 
@@ -122,7 +150,7 @@ float timer = 0.0f;
     {
 
         float norm = (float)value / 1024.0f;
-        float skewed = pow( norm, 2.0f - skew );
+        float skewed = pow( norm, 2.0f - skew ); // invert skew..
     
         return static_cast<int> (round( skewed * 1024.0f) );
     }
@@ -142,7 +170,7 @@ void setup()
 #endif
 
 #if USE_SERIAL
-  Serial.begin(9600);
+    Serial.begin(9600);
 #endif
 
     memset( lastButtonState, 0, sizeof(lastButtonState) );
@@ -156,7 +184,8 @@ void setup()
 void loop() {
 
 #if USE_SERIAL
-    parseCommand(inputString);
+   getData();
+   updateValues();
 #endif
 
 #if USE_HANDBRAKE
@@ -197,6 +226,6 @@ void loop() {
         }
     }
 
-    delay(10);
+    //delay(10);
 }
 
