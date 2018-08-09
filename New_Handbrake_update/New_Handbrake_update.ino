@@ -15,7 +15,7 @@
 // only compile relevant code when not using handbrake (0)
 #define USE_HANDBRAKE 1
 #define USE_SERIAL 1
-#define SINE_TEST 0
+#define SINE_TEST 1
 
 // Last state of the buttons
 int lastButtonState[MAX_SHIFTER_BTNS];
@@ -196,15 +196,17 @@ void loop() {
     //update handbrake axis
     int pot    = analogRead( A0 );
 
+    
+    #if USE_SERIAL
+      pot = testBrakePos;
+    #endif
+
     #if SINE_TEST
       float mod =  ( sin( timer * PI ) + 1.0f ) / 2.0f;
       pot =static_cast<int>( mod * 1023.0f ); //TEST!
       timer += 0.001f;
     #endif
 
-    #if USE_SERIAL
-      pot = testBrakePos;
-    #endif
     int skewed = getSkewedValue(pot, skewFactor);
     skewed     = constrain(skewed, deadZone, 1023);
     Joystick.setXAxis(skewed);
