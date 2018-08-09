@@ -48,7 +48,7 @@ float timer = 0.0f;
 
 #if USE_SERIAL
     // serial variables
-    const byte numChars = 32;
+    const byte numChars = 16;
     char receivedChars[numChars];
     char tempChars[numChars];
 
@@ -100,7 +100,7 @@ float timer = 0.0f;
     {
         char* pchar;
 
-         pchar = strtok(tempChars, ",");  // split part in tempChar
+         pchar = strtok(tempChars, ",");  // get first part
          strcpy(messageFromGUI, pchar);   // copy first part to messageFromGUI
   
          pchar = strtok(NULL, ",");
@@ -140,21 +140,17 @@ float timer = 0.0f;
              
         }
     }
-
-
 #endif //USE_SERIAL
 
 
 #if USE_HANDBRAKE
     int getSkewedValue(int value, float skew)
     {
-
         float norm = (float)value / 1024.0f;
         float skewed = pow( norm, 2.0f - skew ); // invert skew..
     
         return static_cast<int> (round( skewed * 1024.0f) );
     }
-
 #endif //USE_HANDBRAKE
 
 
