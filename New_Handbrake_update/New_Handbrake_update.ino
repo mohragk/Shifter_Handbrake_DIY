@@ -164,10 +164,10 @@ void loop() {
     int pot    = analogRead( A0 );
 
     #if USE_SERIAL
-      float mod =  sin( timer * PI );
+      float mod =  ( sin( timer * PI ) + 1.0 ) / 2.0;
       pot =static_cast<int>( mod * 1023.0 ); //TEST!
       Serial.println(pot);
-      timer += 1.0;
+      timer += 0.001;
     #endif
   
     int skewed = getSkewedValue(pot, skewFactor);
