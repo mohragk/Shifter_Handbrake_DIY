@@ -28,7 +28,7 @@ int deadZone = 0;
 // Overrides the AnalogRead value and 
 // should be removed after testing!
 int testBrakePos = 0;
-
+float timer = 0.0f;
 
 #if USE_HANDBRAKE
     Joystick_ Joystick(JOYSTICK_DEFAULT_REPORT_ID,JOYSTICK_TYPE_JOYSTICK,
@@ -164,7 +164,10 @@ void loop() {
     int pot    = analogRead( A0 );
 
     #if USE_SERIAL
-    pot = testBrakePos; //TEST!
+      float mod =  sin( timer * PI );
+      pot =static_cast<int>( mod * 1023.0 ); //TEST!
+      Serial.println(pot);
+      timer += 1.0;
     #endif
   
     int skewed = getSkewedValue(pot, skewFactor);
