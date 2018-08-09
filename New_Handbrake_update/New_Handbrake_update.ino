@@ -15,6 +15,7 @@
 // only compile relevant code when not using handbrake (0)
 #define USE_HANDBRAKE 1
 #define USE_SERIAL 1
+#define SINE_TEST 0
 
 // Last state of the buttons
 int lastButtonState[MAX_SHIFTER_BTNS];
@@ -48,7 +49,7 @@ float timer = 0.0f;
 
 #if USE_SERIAL
     // serial variables
-    const byte numChars = 16;
+    const int numChars = 32;
     char receivedChars[numChars];
     char tempChars[numChars];
 
@@ -59,7 +60,7 @@ float timer = 0.0f;
  
 
     
-    void getData()
+    void serialEventRun()
     {
         static bool inProgress = false;
         static int idx = 0;
@@ -67,31 +68,35 @@ float timer = 0.0f;
         char endMarker = '>';
         char inChar;
         
-        while (Serial.available() > 0) 
+        while (Serial.available()) 
         {
           inChar = Serial.read();
+          
 
           if (inProgress == true)
           {
-              if (inChar != endMarker)
-              {
-                  receivedChars[idx] = inChar;
-                  idx++;
-                  if (idx > numChars)
-                      idx = numChars - 1;
-              }
-              else
+              if (inChar == endMarker)
               {
                   receivedChars[idx] = '\0';
                   inProgress = false;
                   idx = 0;
+                  
                   stringComplete = true;
+                  
+              } else {
+                  receivedChars[idx] = inChar;
+                  idx++;
+                  if (idx > numChars) {
+                      idx = numChars - 1;
+                  }
               }
           }
           else if ( inChar == beginMarker )
           {
-              inProgress == true;
+              inProgress = true;
           }
+
+          
           
       }
     }
@@ -114,23 +119,22 @@ float timer = 0.0f;
             strcpy (tempChars, receivedChars);
             parseData();
 
-           
 
-            if      ( strcmp(messageFromGUI, "S") )
+            if      ( messageFromGUI[0] == 'S' )
             {
                skewFactor = static_cast<float>( valueFromGUI ) / 1024.0f;
                Serial.print("Skew command received: ");
                Serial.print(skewFactor);
                Serial.println();
             }
-            else if ( strcmp(messageFromGUI, "Z") )
+            else if ( messageFromGUI[0] == 'Z' )
             {
               deadZone = valueFromGUI;
               Serial.print("Deadzone command received: ");
               Serial.print(deadZone);
               Serial.println();
             }
-            else if ( strcmp(messageFromGUI, "T") )
+            else if ( messageFromGUI[0] == 'T' )
             {
               testBrakePos = valueFromGUI;
               Serial.print("HB Test command received: ");
@@ -182,9 +186,9 @@ void setup()
 void loop() {
 
 #if USE_SERIAL
-   getData();
-   //updateValues();
-  if (stringComplete) Serial.println("Hello, Sailor!");
+   //getData();
+   updateValues();
+ 
 
 #endif
 
@@ -192,13 +196,16 @@ void loop() {
     //update handbrake axis
     int pot    = analogRead( A0 );
 
-    #if USE_SERIAL
+    #if SINE_TEST
       float mod =  ( sin( timer * PI ) + 1.0f ) / 2.0f;
       pot =static_cast<int>( mod * 1023.0f ); //TEST!
       timer += 0.001f;
     #endif
-  
-    int skewed = pot; //getSkewedValue(pot, skewFactor);
+
+    #if USE_SERIAL
+      pot = testBrakePos;
+    #endif
+    int skewed = getSkewedValue(pot, skewFactor);
     skewed     = constrain(skewed, deadZone, 1023);
     Joystick.setXAxis(skewed);
     

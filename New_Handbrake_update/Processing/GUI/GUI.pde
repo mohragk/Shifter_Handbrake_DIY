@@ -184,6 +184,7 @@ void createAndSendCommand(int value, String name)
 {
     String message = "<";
     message += name;
+    message += ",";
     message += str(value);
     message += ">";
     
