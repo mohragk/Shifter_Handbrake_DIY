@@ -5,13 +5,15 @@ Serial port;
 
 ControlP5 cp5;
 CallbackListener cb;
-Slider cSlider, zSlider, testSlider;
+Slider cSlider, zSlider;
 ScrollableList portSelector;
 Textlabel info;
 
 PFont font;
 PImage curveImg;
 
+float currentSkewValue = 1.0;
+int currentDeadzoneValue = 0;
 
 void setup()
 {
@@ -80,13 +82,7 @@ void setup()
     .setLabel("Deadzone");
     ;
   
-  testSlider = cp5.addSlider("handBrakeTest")
-    .setRange(0, 1023)
-    .setValue(0)
-    .setPosition(width - 40, 30)
-    .setSize(10, 200)
-    .setLabel("Handbrake")
-    ;
+  
 }
 
 
@@ -114,7 +110,10 @@ void draw()
   drawImage(curveImg);
 }
 
-
+void updateSliderAndButtonValues()
+{
+    
+}
 
 
 void fillImage(PImage img, float skew)
@@ -175,10 +174,6 @@ void portSelect(int n)
     setPort( n );
 }
 
-void handBrakeTest(int value)
-{
-    createAndSendCommand(value, "T"); 
-}
 
 void createAndSendCommand(int value, String name)
 {

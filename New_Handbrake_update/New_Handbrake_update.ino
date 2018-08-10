@@ -7,6 +7,7 @@
 
 
 #include "Joystick.h"
+#include <EEPROM.h>
 
 
 #define MAX_SHIFTER_BTNS 2
@@ -16,6 +17,8 @@
 #define USE_HANDBRAKE 1
 #define USE_SERIAL 1
 #define SINE_TEST 1
+#define USE_EEPROM 1
+
 
 // Last state of the buttons
 int lastButtonState[MAX_SHIFTER_BTNS];
@@ -149,6 +152,63 @@ float timer = 0.0f;
 #endif //USE_SERIAL
 
 
+#if USE_EEPROM
+    
+    float eeSkew = 1.0;
+    int   eeDeadzone = 0;
+
+    void getEEPROMData()
+    {
+       int eeAddress = 0;
+       EEPROM.get(eeAddress, eeSkew);
+       skewFactor = eeSkew;
+      
+       
+       eeAddress = sizeof(float);
+       EEPROM.get(eeAddress, eeDeadzone);
+       deadZone = eeDeadzone;
+       Serial.print("Deadzone from EEPROM: ");
+       Serial.println(deadZone);
+    }
+
+    void readRawData()
+    {
+      int address = 0;
+      byte val = EEPROM.read(address);
+
+      Serial.print(address);
+      Serial.print("\t");
+      Serial.print(val, DEC);
+      Serial.println();
+
+      address += 1;
+      if (address == EEPROM.length())
+        address = 0;
+      
+    }
+
+    void updateEEPROMData()
+    {
+        int eeAddress = 0;
+
+        if (eeSkew != skewFactor)
+        {
+          EEPROM.put(eeAddress, skewFactor);
+          eeSkew = skewFactor;
+          Serial.println("SkewFactor saved to EEPROM!");
+        }
+
+        if (eeDeadzone != deadZone)
+        {
+          eeAddress = sizeof(float);
+          EEPROM.put(eeAddress, deadZone);
+          eeDeadzone = deadZone;
+          Serial.println("Deadzone saved to EEPROM!");
+        }
+    } 
+#endif
+
+
 #if USE_HANDBRAKE
     int getSkewedValue(int value, float skew)
     {
@@ -177,6 +237,12 @@ void setup()
 
     memset( lastButtonState, 0, sizeof(lastButtonState) );
 
+#if USE_EEPROM
+    
+    getEEPROMData();
+     
+#endif
+
     // Initialize Joystick Library
     Joystick.begin();
    
@@ -186,11 +252,10 @@ void setup()
 void loop() {
 
 #if USE_SERIAL
-   //getData();
    updateValues();
- 
-
 #endif
+
+    
 
 #if USE_HANDBRAKE
     //update handbrake axis
@@ -234,6 +299,6 @@ void loop() {
         }
     }
 
-    //delay(10);
+    updateEEPROMData();
 }
 
