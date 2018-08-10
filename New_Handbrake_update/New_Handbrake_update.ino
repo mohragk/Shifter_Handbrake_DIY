@@ -8,6 +8,7 @@
 
 #include "Joystick.h"
 #include <EEPROM.h>
+#include <Timer.h>
 
 
 #define MAX_SHIFTER_BTNS 2
@@ -33,6 +34,9 @@ int deadZone = 0;
 // should be removed after testing!
 int testBrakePos = 0;
 float timer = 0.0f;
+
+int previousTime = 0;
+unsigned long interval = 2000;
 
 #if USE_HANDBRAKE
     Joystick_ Joystick(JOYSTICK_DEFAULT_REPORT_ID,JOYSTICK_TYPE_JOYSTICK,
@@ -137,13 +141,7 @@ float timer = 0.0f;
               Serial.print(deadZone);
               Serial.println();
             }
-            else if ( messageFromGUI[0] == 'T' )
-            {
-              testBrakePos = valueFromGUI;
-              Serial.print("HB Test command received: ");
-              Serial.print(testBrakePos);
-              Serial.println();
-           }
+            
            
            stringComplete = false;
              
@@ -157,34 +155,49 @@ float timer = 0.0f;
     float eeSkew = 1.0;
     int   eeDeadzone = 0;
 
+    Timer t;
+
     void getEEPROMData()
     {
        int eeAddress = 0;
        EEPROM.get(eeAddress, eeSkew);
        skewFactor = eeSkew;
-      
-       
+
        eeAddress = sizeof(float);
        EEPROM.get(eeAddress, eeDeadzone);
        deadZone = eeDeadzone;
-       Serial.print("Deadzone from EEPROM: ");
-       Serial.println(deadZone);
+
     }
 
-    void readRawData()
+    void sendEEPROMData()
     {
-      int address = 0;
-      byte val = EEPROM.read(address);
+       int eeAddress = 0;
+       float sk = 1.0f;
+       int dz = 0;
+       
+       EEPROM.get(eeAddress, sk);
+       int skew = round(sk * 1024);
+       Serial.print("[S,");       // prefix and name
+       Serial.print(skew);        // value
+       Serial.println("]");         // suffix
 
-      Serial.print(address);
-      Serial.print("\t");
-      Serial.print(val, DEC);
-      Serial.println();
+       eeAddress = sizeof(float);
+       EEPROM.get(eeAddress, dz);
+       Serial.print("[Z,");       // prefix and name
+       Serial.print(dz);          // value
+       Serial.println("]");         // suffix
+    }
 
-      address += 1;
-      if (address == EEPROM.length())
-        address = 0;
-      
+    void sendEEPROMDataAtInterval(unsigned long interv)
+    {
+        unsigned long currentTime = millis();
+        if (currentTime - previousTime >= interv)
+        {
+            sendEEPROMData();
+            previousTime = currentTime;
+        }
+          
+         
     }
 
     void updateEEPROMData()
@@ -195,7 +208,7 @@ float timer = 0.0f;
         {
           EEPROM.put(eeAddress, skewFactor);
           eeSkew = skewFactor;
-          Serial.println("SkewFactor saved to EEPROM!");
+          Serial.println("skewFactor saved to EEPROM!");
         }
 
         if (eeDeadzone != deadZone)
@@ -206,6 +219,9 @@ float timer = 0.0f;
           Serial.println("Deadzone saved to EEPROM!");
         }
     } 
+
+    
+
 #endif
 
 
@@ -240,6 +256,7 @@ void setup()
 #if USE_EEPROM
     
     getEEPROMData();
+    t.every(2000, sendEEPROMData);
      
 #endif
 
@@ -299,6 +316,9 @@ void loop() {
         }
     }
 
+#if USE_EEPROM
     updateEEPROMData();
+    t.update();
+#endif
 }
 

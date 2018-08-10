@@ -12,8 +12,6 @@ Textlabel info;
 PFont font;
 PImage curveImg;
 
-float currentSkewValue = 1.0;
-int currentDeadzoneValue = 0;
 
 void setup()
 {
@@ -81,7 +79,20 @@ void setup()
     .setTriggerEvent(Slider.RELEASE)
     .setLabel("Deadzone");
     ;
-  
+    
+  zSlider.addCallback(new CallbackListener() 
+     {
+      public void controlEvent(CallbackEvent theEvent) {
+        if (   theEvent.getAction()==ControlP5.ACTION_RELEASE 
+            || theEvent.getAction()==ControlP5.ACTION_RELEASE_OUTSIDE
+            || theEvent.getAction()==ControlP5.ACTION_WHEEL
+            ) 
+        {
+          createAndSendCommand((int)zSlider.getValue(), "Z");
+        }
+      }
+    }
+  );
   
 }
 
@@ -99,20 +110,86 @@ void draw()
 {
   background(0);
   
-  while (port.available() > 0) {
-    String inBuffer = port.readString();   
-    if (inBuffer != null) 
-    {
-      info.setText(inBuffer);
-    }
-  }
-  
+  getSerialCommand();
+  parseCommand();
+
   drawImage(curveImg);
 }
 
-void updateSliderAndButtonValues()
+
+String commandString = "";
+boolean inProgress = false;
+ArrayList<String> commands = new ArrayList<String>(0);
+
+String temp;
+void getSerialCommand()
 {
+   
+    char beginMarker = '[';
+    char endMarker = ']';
+    char inChar;
+    String tmp = "";
+  
     
+    while (port.available() > 0 ) {
+      inChar = port.readChar();
+      
+      if (inProgress == true)
+      {
+          if (inChar == endMarker)
+          {  
+              inProgress = false;
+              commands.add(tmp);
+              tmp = "";
+          }
+          else
+          {
+              tmp += inChar;
+          }
+        
+      }
+      else if (inChar == beginMarker)
+      {
+         inProgress = true;
+      }
+      
+    }
+}
+
+
+void getSerialNormal()
+{
+  while (port.available() > 0) {
+    String inBuffer = port.readString();   
+    
+    if (inBuffer.charAt(0) != '[')
+        info.setText(inBuffer);
+   
+  }
+}
+
+void parseCommand()
+{
+   if (commands.size() > 0)
+   {
+     
+     for ( String cmd: commands)
+     {
+        if (cmd.charAt(0) == 'S')
+        {
+           int val = Integer.parseInt(cmd.substring(2));
+           cSlider.setValue( 1023 - val );
+        }
+        else if (cmd.charAt(0) == 'Z')
+        {
+           int val = Integer.parseInt(cmd.substring(2));
+           zSlider.setValue( val );
+        }
+     }
+     
+     commands.clear();
+      
+   }
 }
 
 
@@ -166,7 +243,7 @@ void curveSlider(int value)
 
 void deadzoneSlider(int value)
 {
-     createAndSendCommand(value, "Z");
+     //createAndSendCommand(value, "Z");
 }
 
 void portSelect(int n) 
