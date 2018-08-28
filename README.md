@@ -37,12 +37,15 @@ In order to use a GUI to edit settings on the board, I made a command system tha
 ```
 The '<' denotes the beginning of a command.  
 'N' is the name of the command and must be unique for each slider/knob/button.  
-',' denotes the beginning of a value. Values can be any unsigned integer and should be ideally within the range 0 to 1023.
+',' denotes the beginning of a value. Values can be any unsigned integer and should be ideally within the range 0 to 1023.  
 '>' denotes the end of a command.   
 
 Commands that are send form the board to the GUI have the following protocol:
 ```c++
 [N,0000]
 ```
-This as to make it easier to debug any serial bugs.
+Check the source code for examples on how to use this system and feel free to aks if you have any questions.   
+
+## Disclaimer
+Use at your own risk, this code is not thorougly tested.
 
