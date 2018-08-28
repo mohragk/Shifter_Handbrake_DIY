@@ -1,5 +1,5 @@
 # Handbrake and Sequential Shifter controller using a (Arduino) Pro Micro
-Example code for a sequential shifter and analog handbrake. A GUI (made with P5/Processing) is included for editing the handbrake response curve and deadzone. 
+Example code for a sequential shifter and analog handbrake combo. A GUI (made with P5/Processing) is included for editing the handbrake response curve and deadzone. 
 
 ## Usage
 Connect microswitches to pin 9 and 10 for the sequential shifter and a potentiometer to pin A0 for the handbrake.   
@@ -30,7 +30,7 @@ I've added 4 defines:
    
 You have to re-upload the sketch every time you change these defines.
 
-## The GUI/Pro Micro Command system
+## The GUI/Pro Micro command system
 In order to use a GUI to edit settings on the board, I made a command system that sends command messages via the serial connection, to and from the board. If you want to expand the GUI and add more functionality, the command protocol is as follows:
 ```c++
 <N,0000>
