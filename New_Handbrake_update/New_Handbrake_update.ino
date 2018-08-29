@@ -1,8 +1,9 @@
 //------------------------------
-// - Connect microswitches from shifter to pin 9 and 10
-// - Connect  10k potentiometer from handbrake to A0
+// - Connect microswitches from shifter to pins 9 and 10
+// - Connect  10k potentiometer from handbrake to pin A0
 //
-// Serial command protocol: <I,0000>
+// Serial command protocol for reading: <N,0000>
+// Serial command protocol for sending: [N,0000]
 //-----------------------------
 
 
@@ -17,7 +18,7 @@
 // only compile relevant code when not using handbrake (0)
 #define USE_HANDBRAKE 1
 #define USE_SERIAL 1
-#define SINE_TEST 1
+#define SINE_TEST 0
 #define USE_EEPROM 1
 
 
@@ -30,13 +31,6 @@ int handbrakeButtonNum = 6;
 float skewFactor = 1.0f;
 int deadZone = 0;
 
-// Overrides the AnalogRead value and 
-// should be removed after testing!
-int testBrakePos = 0;
-float timer = 0.0f;
-
-int previousTime = 0;
-unsigned long interval = 2000;
 
 #if USE_HANDBRAKE
     Joystick_ Joystick(JOYSTICK_DEFAULT_REPORT_ID,JOYSTICK_TYPE_JOYSTICK,
@@ -79,7 +73,6 @@ unsigned long interval = 2000;
         {
           inChar = Serial.read();
           
-
           if (inProgress == true)
           {
               if (inChar == endMarker)
@@ -102,8 +95,6 @@ unsigned long interval = 2000;
           {
               inProgress = true;
           }
-
-          
           
       }
     }
@@ -119,13 +110,12 @@ unsigned long interval = 2000;
          valueFromGUI = atoi(pchar);
     }
     
-    void updateValues()
+    void updateValuesFromCommand()
     {
         if (stringComplete)
         {
             strcpy (tempChars, receivedChars);
             parseData();
-
 
             if      ( messageFromGUI[0] == 'S' )
             {
@@ -142,7 +132,6 @@ unsigned long interval = 2000;
               Serial.println();
             }
             
-           
            stringComplete = false;
              
         }
@@ -188,17 +177,7 @@ unsigned long interval = 2000;
        Serial.println("]");         // suffix
     }
 
-    void sendEEPROMDataAtInterval(unsigned long interv)
-    {
-        unsigned long currentTime = millis();
-        if (currentTime - previousTime >= interv)
-        {
-            sendEEPROMData();
-            previousTime = currentTime;
-        }
-          
-         
-    }
+   
 
     void updateEEPROMData()
     {
@@ -219,10 +198,7 @@ unsigned long interval = 2000;
           Serial.println("Deadzone saved to EEPROM!");
         }
     } 
-
-    
-
-#endif
+#endif // USE_EEPROM
 
 
 #if USE_HANDBRAKE
@@ -239,7 +215,7 @@ unsigned long interval = 2000;
 
 void setup() 
 {
-	  // Initialize Pins
+	// Initialize Pins
     pinMode(9, INPUT_PULLUP);
     pinMode(10, INPUT_PULLUP);
     
@@ -254,10 +230,8 @@ void setup()
     memset( lastButtonState, 0, sizeof(lastButtonState) );
 
 #if USE_EEPROM
-    
     getEEPROMData();
-    t.every(2000, sendEEPROMData);
-     
+    t.every(2000, sendEEPROMData); // send EEPROM data every 2 second over serial connection to GUI
 #endif
 
     // Initialize Joystick Library
@@ -269,7 +243,7 @@ void setup()
 void loop() {
 
 #if USE_SERIAL
-   updateValues();
+   updateValuesFromCommand();
 #endif
 
     
@@ -278,15 +252,11 @@ void loop() {
     //update handbrake axis
     int pot    = analogRead( A0 );
 
-    
-    #if USE_SERIAL
-      pot = testBrakePos;
-    #endif
-
     #if SINE_TEST
       float mod =  ( sin( timer * PI ) + 1.0f ) / 2.0f;
       pot =static_cast<int>( mod * 1023.0f ); //TEST!
       timer += 0.001f;
+      if (timer > 2.0f) {  timer = 0.0f; };
     #endif
 
     int skewed = getSkewedValue(pot, skewFactor);
