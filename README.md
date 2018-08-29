@@ -53,8 +53,7 @@ Check the source code for examples on how to use this system and feel free to ak
 ## Using the EEPROM for storing variables
 If you want to expand the GUI and store variables on the EEPROM of the Pro Micro, I highly recommend you [read the documentation on the Arduino site](https://www.arduino.cc/en/Reference/EEPROM).   
 
-You have to keep in mind that the EEPROM has a limited amount of writes, so *DON'T* write to the EEPROM every update! Make sure it only writes to the EEPROM when necessary.  
-Readin values shouldn't be an issue.    
+You have to keep in mind that the EEPROM has a limited amount of writes, so *DON'T* write to the EEPROM every update! Make sure it only writes to the EEPROM when necessary. Reading values from the EEPROM shouldn't be an issue.    
 
 ## Disclaimer
 Use at your own risk, this code is not thorougly tested.
