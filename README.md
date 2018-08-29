@@ -10,6 +10,8 @@ Clone the repo to your harddrive and upload to your Pro Micro. It is recommended
 The sketch uses the Timer library, so install that if you don't have it already:
 [Timer library for Arduino](https://playground.arduino.cc/code/timer)   
 
+The GUI uses the ControlP5 library for all the sliders and buttons. You need to install that to use the sketch. [Check out the ControlP5 site for instructions](http://www.sojamo.de/libraries/controlP5/)   
+
 Then, compile the GUI with Processing. You can export to GUI as an executable, if you don't want to run Processing everytime.   
 You can use the GUI to set a curve for the handbrake response and a deadzone. Settings are stored on the EEPROM of the Pro Micro.   
 
@@ -35,10 +37,10 @@ In order to use a GUI to edit settings on the board, I made a command system tha
 ```c++
 <N,0000>
 ```
-The '<' denotes the beginning of a command.  
-'N' is the name of the command and must be unique for each slider/knob/button.  
-',' denotes the beginning of a value. Values can be any unsigned integer and should be ideally within the range 0 to 1023.  
-'>' denotes the end of a command.   
+- '<' denotes the beginning of a command.  
+- 'N' is the name of the command and must be unique for each slider/knob/button.  
+- ',' denotes the beginning of a value. Values can be any unsigned integer and should be ideally within the range 0 to 1023.  
+- '>' denotes the end of a command.   
 
 Commands that are send form the board to the GUI have the following protocol:
 ```c++
