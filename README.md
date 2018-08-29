@@ -15,7 +15,7 @@ The sketch uses the Timer library, so install that if you don't have it already:
 The GUI uses the ControlP5 library for all the sliders and buttons. You need to add that library to [Processing](https://processing.org/) to use the sketch. [Check out the ControlP5 site for instructions](http://www.sojamo.de/libraries/controlP5/)   
 
 Then, compile the GUI with [Processing](https://processing.org/). You can export the GUI as an executable if you don't want to run Processing everytime.   
-The GUI is designed as an interface for the board to set a curve for the handbrake response and a deadzone. These settings are stored on the EEPROM of the Pro Micro. That way, you don't have to run the GUI to keep the curvature and deadzone.  
+The GUI is designed as an interface for the board to set a curve for the handbrake response and a deadzone. These settings are stored on the EEPROM of the Pro Micro. That way you don't have to run the GUI to keep the curvature and deadzone settings.  
 
 **IMPORTANT**  
 The GUI checks at 2 second intervals for values stored on the Pro Micro to sync the sliders to the values of the board. Simply wait a moment when running the GUI to sync up to the board.   
@@ -48,7 +48,7 @@ Commands that are send form the board to the GUI have the following protocol:
 ```c++
 [N,0000]
 ```
-Check the source code for examples on how to use this system and feel free to aks if you have any questions.   
+Check the source code for examples on how to use this system and feel free to ask if you have any questions.   
 
 ## Using the EEPROM for storing variables
 If you want to expand the GUI and store variables on the EEPROM of the Pro Micro, I highly recommend you [read the documentation on the Arduino site](https://www.arduino.cc/en/Reference/EEPROM).   
