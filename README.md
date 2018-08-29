@@ -2,6 +2,7 @@
 Example code for a sequential shifter and analog handbrake combo. A GUI (made with P5/Processing) is included for editing the handbrake response curve and deadzone. 
 
 ## Usage
+#### Pro Micro
 Connect microswitches to pin 9 and 10 for the sequential shifter and a potentiometer to pin A0 for the handbrake.   
 
 Clone the repo to your harddrive and upload to your Pro Micro. It is recommended you use the 16Mhz version of the board and use the Sparkfun Arduino addon. 
@@ -10,10 +11,11 @@ Clone the repo to your harddrive and upload to your Pro Micro. It is recommended
 The sketch uses the Timer library, so install that if you don't have it already:
 [Timer library for Arduino](https://playground.arduino.cc/code/timer)   
 
-The GUI uses the ControlP5 library for all the sliders and buttons. You need to install that to use the sketch. [Check out the ControlP5 site for instructions](http://www.sojamo.de/libraries/controlP5/)   
+#### GUI
+The GUI uses the ControlP5 library for all the sliders and buttons. You need to add that library to [Processing](https://processing.org/) to use the sketch. [Check out the ControlP5 site for instructions](http://www.sojamo.de/libraries/controlP5/)   
 
-Then, compile the GUI with Processing. You can export to GUI as an executable, if you don't want to run Processing everytime.   
-You can use the GUI to set a curve for the handbrake response and a deadzone. Settings are stored on the EEPROM of the Pro Micro.   
+Then, compile the GUI with [Processing](https://processing.org/). You can export the GUI as an executable if you don't want to run Processing everytime.   
+The GUI is designed as an interface for the board to set a curve for the handbrake response and a deadzone. These settings are stored on the EEPROM of the Pro Micro. That way, you don't have to run the GUI to keep the curvature and deadzone.  
 
 **IMPORTANT**  
 The GUI checks at 2 second intervals for values stored on the Pro Micro to sync the sliders to the values of the board. Simply wait a moment when running the GUI to sync up to the board.   
