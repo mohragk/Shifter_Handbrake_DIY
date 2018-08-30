@@ -11,12 +11,14 @@ Textlabel info;
 
 PFont font;
 PImage curveImg;
+PGraphics pg;
 
 
 void setup()
 {
     size(360, 560);
     curveImg = createImage(200 , 200, ARGB);
+    pg = createGraphics(200,200);
     
     if (Serial.list().length > 1)
         port = new Serial(this, Serial.list()[1], 9600);
@@ -46,7 +48,7 @@ void setup()
      ;
   
   cSlider = cp5.addSlider("curveSlider")
-    .setRange(0, 1023 - 256)
+    .setRange(0, 1023)
     .setValue(0)
     .setPosition(40, curveImg.height + 200)
     .setSize(200,20)
@@ -192,7 +194,36 @@ void parseCommand()
    }
 }
 
-
+void fillGraphicsForGraph(PGraphics gr, float skew, float resolution)
+{
+    float x = 0;
+    float y_old = gr.height;
+    
+    int division = round(gr.width / resolution);
+    float stride = 1024 / (gr.width / (float)division);
+    
+    
+    
+    gr.beginDraw();
+    gr.background(12);
+    for (int i = 0; i <= gr.width; i += division)
+    {
+       gr.stroke(255);
+       gr.strokeWeight(1);
+       float y = 0;
+       y = getSkewedValue((int)x, skew);
+       y = map(y, 0, 1024,  gr.height, 0); //invert image
+       
+       gr.line(i - division, y_old, i, y);
+   
+       y_old = y;
+       
+       x += stride;
+    }
+    
+    
+    gr.endDraw();
+}
 void fillImage(PImage img, float skew)
 {
     float x = 1024;
@@ -204,7 +235,7 @@ void fillImage(PImage img, float skew)
         int y = 0;
     
         y = round( getSkewedValue((int)x, skew) );
-        y = round(map(y, 0, 1023, 0 , img.width));
+        y = round(map(y, 0, 1023, 0 , img.height));
         int strokewidth = 2;
         
         if ( y - strokewidth <= i % img.width && y >= i % img.width )
@@ -222,22 +253,25 @@ void fillImage(PImage img, float skew)
 
 void drawImage(PImage img)
 {
-    image(img, 40, 120);
+    //image(img, 40, 120);
+    image(pg, 40, 120);
 }
 
 int getSkewedValue(int value, float skew)
 {
-    float norm = (float)value / 1024;
-    float skewed = pow( norm, skew );
+    float factor = 1024;
+    float norm = (float)value / factor;
+    float skewed = pow( norm, 2.0 - skew );
 
-    return round(skewed * 1024);
+    return round(skewed * factor);
 }
 
 void curveSlider(int value)
 {
     // update image
     float skewFactor = (1023 - (float)value) / 1024;
-    fillImage(curveImg, skewFactor);
+    //fillImage(curveImg, skewFactor);
+    fillGraphicsForGraph(pg,  skewFactor, 64);
 }
 
 
