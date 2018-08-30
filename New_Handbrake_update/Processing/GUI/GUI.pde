@@ -115,7 +115,7 @@ void draw()
   getSerialCommand();
   parseCommand();
 
-  drawImage(curveImg);
+  drawGraph();
 }
 
 
@@ -251,7 +251,7 @@ void fillImage(PImage img, float skew)
 }
 
 
-void drawImage(PImage img)
+void drawGraph()
 {
     //image(img, 40, 120);
     image(pg, 40, 120);
