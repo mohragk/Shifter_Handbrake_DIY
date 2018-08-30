@@ -202,26 +202,34 @@ void fillGraphicsForGraph(PGraphics gr, float skew, float resolution)
     int division = round(gr.width / resolution);
     float stride = 1024 / (gr.width / (float)division);
     
-    
+    int weight = 1;
     
     gr.beginDraw();
     gr.background(12);
+    gr.stroke(255);
+    gr.strokeWeight(weight);
+    
+    gr.beginShape();
+    
+    gr.vertex(0, gr.height);
     for (int i = 0; i <= gr.width; i += division)
     {
-       gr.stroke(255);
-       gr.strokeWeight(1);
+      
        float y = 0;
        y = getSkewedValue((int)x, skew);
        y = map(y, 0, 1024,  gr.height, 0); //invert image
        
-       gr.line(i - division, y_old, i, y);
+      // gr.line(i - division, y_old, i, y);
+      
+      gr.noFill();
+      gr.curveVertex(i, y);
    
        y_old = y;
        
        x += stride;
     }
-    
-    
+    gr.vertex(gr.width, 0);
+    gr.endShape();
     gr.endDraw();
 }
 void fillImage(PImage img, float skew)
@@ -271,7 +279,7 @@ void curveSlider(int value)
     // update image
     float skewFactor = (1023 - (float)value) / 1024;
     //fillImage(curveImg, skewFactor);
-    fillGraphicsForGraph(pg,  skewFactor, 64);
+    fillGraphicsForGraph(pg,  skewFactor, 16);
 }
 
 
